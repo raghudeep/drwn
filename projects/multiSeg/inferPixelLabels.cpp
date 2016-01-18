@@ -45,6 +45,7 @@ public:
     static const char *outLabelExt;        // extension for output labels
     static const char *outImageExt;        // extension for output images
     static const char *outUnaryExt;        // extension for output unary potentials
+    static const char *outFeatureExt;        // extension for output pixelwise feature
     static bool bVisualize;                // visualization flag
 
 public:
@@ -120,12 +121,33 @@ public:
             }
             ofs.close();
         }
+
+        // save pixel features
+     	  if (outFeatureExt != NULL) {
+            instance.unaries.clear();
+            instance.unaries.reserve(instance.size());
+            drwnSegImagePixelFeatures *featureGenerator;
+            featureGenerator = new drwnSegImageStdPixelFeatures();
+            featureGenerator->cacheInstanceData(instance);
+            featureGenerator->appendAllPixelFeatures(instance.unaries);
+            string filename = gMultiSegConfig.filebase("outputDir", *baseName) + string(outFeatureExt);
+            ofstream ofs(filename.c_str());
+            DRWN_ASSERT_MSG(!ofs.fail(), filename);
+            for (int i = 0; i < instance.size(); i++) {
+                ofs << toString(instance.unaries[i]) << "\n";
+            }
+            ofs.close();
+            DRWN_LOG_STATUS("\nSaved pixel features for " << *baseName << 
+                            " Feature vector length " << instance.unaries[0].size() << "\n");
+        }
+ 
     }
 };
 
 const char *InferenceThread::outLabelExt = NULL;
 const char *InferenceThread::outImageExt = NULL;
 const char *InferenceThread::outUnaryExt = NULL;
+const char *InferenceThread::outFeatureExt = NULL;
 bool InferenceThread::bVisualize = false;
 
 // usage ---------------------------------------------------------------------
@@ -138,6 +160,7 @@ void usage()
          << "  -outLabels <ext>  :: extension for label output (default: none)\n"
          << "  -outImages <ext>  :: extension for image output (default: none)\n"
          << "  -outUnary <ext>   :: extension for dumping unary potentials (default: none)\n"
+         << "  -outFeature <ext>   :: extension for dumping pixelwise features (default: none)\n"
          << "  -pairwise <w>     :: override learned pairwise contrast weight\n"
          << "  -longrange <w>    :: override learned long-range pairwise weight\n"
          << "  -robustpotts <w>  :: override learned robust potts weight\n"
@@ -159,6 +182,7 @@ int main(int argc, char *argv[])
         DRWN_CMDLINE_STR_OPTION("-outLabels", InferenceThread::outLabelExt)
         DRWN_CMDLINE_STR_OPTION("-outImages", InferenceThread::outImageExt)
         DRWN_CMDLINE_STR_OPTION("-outUnary", InferenceThread::outUnaryExt)
+        DRWN_CMDLINE_STR_OPTION("-outFeature", InferenceThread::outFeatureExt)
         DRWN_CMDLINE_REAL_OPTION("-pairwise", pairwiseWeight)
         DRWN_CMDLINE_REAL_OPTION("-longrange", longRangeWeight)
         DRWN_CMDLINE_REAL_OPTION("-robustpotts", robustPottsWeight)
