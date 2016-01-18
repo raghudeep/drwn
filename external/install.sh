@@ -30,10 +30,10 @@ if (! -e wx && (("$1" == "wxWidgets") || ("$1" == "wx"))) then
     if ("$OS" == "Darwin") then
 	../configure --with-opengl --enable-monolithic --with-osx_cocoa --with-macosx-version-min=10.7 \
 	    --disable-webkit --disable-webviewwebkit --enable-maxosx_arch=x86_64 CC=clang CXX=clang++
-	make || exit 1
+	make -j || exit 1
     else
 	../configure --disable-shared --with-opengl --enable-monolithic
-        make || exit 1
+        make -j || exit 1
     endif
     cd ../..
     ln -s ${WXBUILD}-${VERSION} ${CODEBASE}/external/wx
@@ -80,7 +80,7 @@ if (! -e opencv && (("$1" == "OpenCV") || ("$1" == "opencv"))) then
 	      -D CMAKE_INSTALL_PREFIX=${CODEBASE}/external/opencv \
 	      -D BUILD_NEW_PYTHON_SUPPORT=OFF .
     endif
-    make
+    make -j
     make install
     cd ..
 endif
@@ -94,7 +94,7 @@ if ("$1" == "OpenCV-trunk") then
     cmake -D CMAKE_BUILD_TYPE=RELEASE \
           -D CMAKE_INSTALL_PREFIX=${CODEBASE}/external/opencv \
           -D BUILD_NEW_PYTHON_SUPPORT=OFF .
-    make
+    make -j
     make install
     cd ..
 endif
@@ -108,7 +108,7 @@ if (! -e zlib && "$1" == "zlib") then
     cd zlib
     setenv CC gcc
     ./configure -t --shared
-    make
+    make -j
     cd ..
 endif
 
@@ -121,7 +121,7 @@ if (! -e lua && "$1" == "lua") then
     if ("$OS" == "Darwin") then
         make macosx
     else
-        make linux
+        make -j linux
     endif
     make install INSTALL_TOP=${CODEBASE}/external/lua
 endif
